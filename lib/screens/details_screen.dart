@@ -19,7 +19,7 @@ class DetailsScreen extends StatelessWidget {
         _Overview(
           movie: movie,
         ),
-        CastingCards()
+        CastingCards(movie.id)
       ])),
     ]));
   }
@@ -31,6 +31,12 @@ class _CustomAppBar extends StatelessWidget {
   const _CustomAppBar({Key? key, required this.movie}) : super(key: key);
   @override
   Widget build(BuildContext context) {
+    var image;
+    if (movie.backdropPath != null) {
+      image = NetworkImage(movie.fullbackdropPathImg);
+    } else {
+      image = AssetImage('assets/loading.gif');
+    }
     return SliverAppBar(
       backgroundColor: Colors.indigo,
       expandedHeight: 200,
@@ -51,7 +57,7 @@ class _CustomAppBar extends StatelessWidget {
         ),
         background: FadeInImage(
           placeholder: AssetImage('assets/loading.gif'),
-          image: NetworkImage(movie.fullbackdropPathImg),
+          image: image,
           fit: BoxFit.cover,
         ),
       ),

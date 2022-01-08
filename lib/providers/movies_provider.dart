@@ -14,6 +14,7 @@ class MoviesProvider extends ChangeNotifier {
 
   List<Movie> onDisplayMovies = [];
   List<Movie> popularMovies = [];
+  Map<int, List<Cast>> moviesCast = {};
   int popularPage = 0;
 
   MoviesProvider() {
@@ -56,6 +57,39 @@ class MoviesProvider extends ChangeNotifier {
 
       popularMovies = [...popularMovies, ...popularResponse.results];
       notifyListeners(); //para cualquier widget que use los datos se redibuje
+    } finally {
+      client.close();
+    }
+  }
+
+  Future<List<Cast>> getMovieCast(int movieId) async {
+    //Todo revisar el map
+    if (moviesCast.containsKey(movieId)) return moviesCast[movieId]!;
+    print('pidiendo');
+    var client = http.Client();
+    try {
+      final jsondata = await _getJsonData(client, '3/movie/$movieId/credits',
+          page: popularPage);
+      final creditsResponse = CreditsResponse.fromJson(jsondata);
+      moviesCast[movieId] = creditsResponse.cast;
+      return creditsResponse.cast;
+    } finally {
+      client.close();
+    }
+  }
+
+  Future<List<Movie>> searchMovie(String query) async {
+    var client = http.Client();
+    try {
+      var uri = Uri.https(_baseUrl, '3/search/movie', {
+        'api_key': _apiKey,
+        'language': _language,
+        'query': query,
+      });
+      final response = await client.get(uri);
+      final searchRespoense = SearchResponse.fromJson(response.body);
+
+      return searchRespoense.results;
     } finally {
       client.close();
     }
