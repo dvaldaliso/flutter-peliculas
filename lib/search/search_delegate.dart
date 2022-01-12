@@ -67,12 +67,16 @@ class _MovieItem extends StatelessWidget {
     } else {
       image = AssetImage('assets/no-image.jpg');
     }
+    movie.heroId = 'search-${movie.id}';
     return ListTile(
-      leading: FadeInImage(
-        placeholder: AssetImage('assets/no-image.jpg'),
-        image: image,
-        width: 50,
-        fit: BoxFit.contain,
+      leading: Hero(
+        tag: movie.heroId!,
+        child: FadeInImage(
+          placeholder: AssetImage('assets/no-image.jpg'),
+          image: image,
+          width: 50,
+          fit: BoxFit.contain,
+        ),
       ),
       title: Text(movie.title),
       subtitle: Text(movie.originalTitle),
