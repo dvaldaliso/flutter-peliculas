@@ -1,10 +1,11 @@
 //Servicio o provider de movie
-import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:peliculas/helpers/debouncer.dart';
 import 'package:peliculas/models/models.dart';
 
 class MoviesProvider extends ChangeNotifier {
@@ -14,8 +15,18 @@ class MoviesProvider extends ChangeNotifier {
 
   List<Movie> onDisplayMovies = [];
   List<Movie> popularMovies = [];
+
   Map<int, List<Cast>> moviesCast = {};
+
   int popularPage = 0;
+
+  //stream
+  final debouncer = Debouncer(duration: Duration(milliseconds: 1000));
+
+  final StreamController<List<Movie>> _suggestioStreamController =
+      new StreamController.broadcast();
+  Stream<List<Movie>> get suggestionStream =>
+      this._suggestioStreamController.stream;
 
   MoviesProvider() {
     print('Movies providers inicializado');
@@ -93,5 +104,21 @@ class MoviesProvider extends ChangeNotifier {
     } finally {
       client.close();
     }
+  }
+
+  int i = 0;
+  void getSuggestioByQuery(String searchTerm) {
+    debouncer.value = '';
+    debouncer.onValue = (value) async {
+      i++;
+      print('tenemos valor a buscar $value $i');
+      final result = await this.searchMovie(value);
+      this._suggestioStreamController.add(result);
+    };
+
+    final timer = Timer.periodic(Duration(milliseconds: 300), (_) {
+      debouncer.value = searchTerm;
+    });
+    Future.delayed(Duration(milliseconds: 301)).then((_) => timer.cancel());
   }
 }
